@@ -12,7 +12,7 @@ export async function displayAllGames(req, res) {
 
 //add one game 
 export async function addGame(req, res) {
-    const { name, image, stock_total, price_per_day } = req.body;
+    const { name, image, stockTotal, pricePerDay } = req.body;
     try {
         //verify if game already exists
         const result = await connection.query(
@@ -25,8 +25,8 @@ export async function addGame(req, res) {
         }
 
         const games = await connection.query(
-            'INSERT INTO games (name, image, stock_total, price_per_day) VALUES ($1, $2, $3, $4)',
-            [name, image, stock_total, price_per_day]
+            'INSERT INTO games (name, image, "stockTotal", "pricePerDay") VALUES ($1, $2, $3, $4)',
+            [name, image, stockTotal, pricePerDay]
         );
         res.status(201).send();
     } catch (error) {

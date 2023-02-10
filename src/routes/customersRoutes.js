@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { addCustomer } from "../controllers/customers.js";
 import { validateSchema } from "../middlewares/validateSchema.js";
-import customerSchema from "../middlewares/customerSchema.js";
+import customerSchema from "../schemas/customerSchemas.js";
+
 
 const customerRouter = Router();
 
@@ -14,3 +15,5 @@ customerRouter.post('/customers', validateSchema(customerSchema), addCustomer);
 
 
 //(route: PUT /customers/:id)
+
+export default customerRouter;

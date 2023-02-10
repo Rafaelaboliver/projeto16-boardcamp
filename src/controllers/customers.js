@@ -1,4 +1,4 @@
-import connection from "../config/database";
+import connection from "../config/database.js";
 
 //list all customers 
 
@@ -19,7 +19,7 @@ export async function addCustomer(req, res) {
             return res.status(409).send("This CPF already exists");
         }
 
-        const customer = await db.query(
+        const customer = await connection.query(
             'INSERT INTO customers (name, phone, cpf, birthday) VALUES ($1, $2, $3, $4);',
         [name, phone, cpf, birthday]
       );
