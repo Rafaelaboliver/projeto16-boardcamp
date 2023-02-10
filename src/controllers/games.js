@@ -15,18 +15,20 @@ export async function addGame(req, res) {
     const { name, image, stock_total, price_per_day } = req.body;
     try {
         //verify if game already exists
-        const nameGame = await connection.query('SELECT name from games;');
-        const verifyName = nameGame.rows.map(name => name);
-        console.log(verifyName);
-        if (verifyName === name) {
-            return res.status(409);
-        };
+        const result = await connection.query(
+            'SELECT * FROM games WHERE name = $1',
+            [name]
+        );
+        const alreadyExists = result.rows.length > 0;
+        if (alreadyExists) {
+            return res.status(409).send('This game already exists: ' + name);
+        }
 
         const games = await connection.query(
             'INSERT INTO games (name, image, stock_total, price_per_day) VALUES ($1, $2, $3, $4)',
             [name, image, stock_total, price_per_day]
         );
-        res.status(201).send(games.rows);
+        res.status(201).send();
     } catch (error) {
         return res.status(500).send('server error' + error)
     };

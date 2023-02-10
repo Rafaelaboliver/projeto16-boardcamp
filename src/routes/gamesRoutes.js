@@ -7,6 +7,6 @@ const gamesRoutes = Router();
 
 //(route: GET/games)
 gamesRoutes.get('/games', displayAllGames);
-gamesRoutes.post('/games', addGame, validateSchema(gameSchema));
+gamesRoutes.post('/games', validateSchema(gameSchema), addGame);
 
 export default gamesRoutes;
