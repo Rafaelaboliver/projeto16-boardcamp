@@ -57,3 +57,38 @@ export async function addCustomer(req, res) {
 }
 
 //update a customer 
+export async function updateCustomerData(req, res) {
+    const { id } = req.params;
+    const { name, cpf, phone, birthday } = req.body;
+  
+    try {
+      const customer = await connection.query(
+        'SELECT * FROM customers WHERE id = $1',
+        [id]
+      );
+  
+      const customerExists = customer.rowCount !== 0;
+      if (!customerExists) {
+        return res.status(404).send("Customer does not exist!");
+      }
+  
+      const checkCpf = await connection.query(
+        'SELECT * FROM customers WHERE cpf = $1 AND id <> $2',
+        [cpf, id]
+      );
+      const cpfExists = checkCpf.rowCount > 0;
+      if (cpfExists) {
+        return res.status(409).send("CPF already exists");
+      }
+  
+      await connection.query(
+        'UPDATE customers SET name = $1, cpf = $2, phone = $3, birthday = $4 WHERE id = $5',
+        [name, cpf, phone, birthday, id]
+      );
+  
+      res.status(200).send("Customer's data updated");
+    } catch (error) {
+      res.status(500).send(error.message);
+    }
+  }
+  
