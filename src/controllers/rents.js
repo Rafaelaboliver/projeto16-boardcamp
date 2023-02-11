@@ -37,7 +37,7 @@ export async function displayRents(req, res) {
 }
 
 //add a rent 
-export async function addRental(req, res) {
+export async function addRent(req, res) {
     const { customerId, gameId, daysRented } = req.body;
     const currentDate = new Date();
     const rentDate = currentDate.toISOString().split("T")[0];
@@ -91,5 +91,53 @@ export async function addRental(req, res) {
   }
 
 //checkou a rent 
+export async function updateRent(req, res) {
+  const { id } = req.params;
+  const currentDate = new Date();
+  const rentReturn = currentDate.toISOString().split("T")[0];
+  
+
+  try {
+    const rent = await connection.query(
+      'SELECT * FROM rentals WHERE id = $1',
+      [id]
+    );
+    const rentExists = rent.rows[0] !== 0
+    if (!rentExists) {
+      return res.status(404).send("Rent does not exist!");
+    }
+    let check = rent.rows[0];
+
+    const returned = check.returnDate;
+    if (returned !== null) {
+      return res.status(400).send("Rental already returned!");
+    }
+
+    const rentDate = new Date(check.rentDate);
+    const daysRented = check.daysRented;
+    const returnDate = new Date(rentReturn);
+    const timeSpent = Math.abs(returnDate.getTime() - rentDate.getTime());
+    const daySpent = Math.ceil(timeSpent / (1000 * 3600 * 24));
+    const lagDays = daySpent - daysRented;
+    let delayFee = 0;
+    if (lagDays > 0) {
+      const game = await connection.query('SELECT * FROM games WHERE id = $1', [
+        rent.gameId,
+      ]);
+      const { pricePerDay } = game.rows[0];
+
+      delayFee = lagDays * pricePerDay;
+    }
+
+    await connection.query(
+      'UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3',
+      [rentReturn, delayFee, id] 
+    );
+
+    res.status(200).send();
+  } catch (error) {
+    return res.status(500).send(error.message);
+  }
+}
 
 //delete a rent 
