@@ -11,6 +11,25 @@ export async function displayAllCustomers(req, res) {
 }
 
 //list a customer by id 
+export async function displayCustomerId(req, res) {
+    const { id } = req.params;
+  
+    try {
+      const customer = await connection.query(
+        'SELECT * FROM customers WHERE id = $1',
+        [id]
+      );
+  
+      const customerExists = customer.rowCount !== 0;
+      if (!customerExists) {
+        return res.status(404).send("Customer does not exist");
+      }
+  
+      res.status(200).send(customer.rows[0]);
+    } catch (error) {
+      res.status(500).send(error.message);
+    }
+  }
 
 //add a customer
 export async function addCustomer(req, res) {
