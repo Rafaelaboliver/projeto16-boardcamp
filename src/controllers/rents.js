@@ -86,10 +86,6 @@ export async function addRent(req, res) {
         return res.status(400).send('Game not available');
       }
 
-
-
-
-
       await connection.query(
         'INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") VALUES ($1, $2, $3, $4, $5, $6, $7);',
         [
@@ -120,7 +116,7 @@ export async function updateRent(req, res) {
       'SELECT * FROM rentals WHERE id = $1',
       [id]
     );
-    const rentExists = rent.rows[0] !== 0
+    const rentExists = rent.rowCount !== 0
     if (!rentExists) {
       return res.status(404).send("Rent does not exist!");
     }
@@ -167,7 +163,7 @@ export async function deleteRent(req, res) {
       'SELECT * FROM rentals WHERE id = $1',
       [id]
     );
-    const rentExists = checkRent.rows[0] !== 0;
+    const rentExists = checkRent.rowCount !== 0;
     if (!rentExists) {
       return res.status(404).send("Rent does not exists!");
     }
