@@ -136,13 +136,15 @@ export async function updateRent(req, res) {
     let delayFee = 0;
     if (lagDays > 0) {
       const game = await connection.query('SELECT * FROM games WHERE id = $1', [
-        rent.gameId,
+        check.gameId,
       ]);
+      
       const { pricePerDay } = game.rows[0];
+
 
       delayFee = lagDays * pricePerDay;
     }
-
+    
     await connection.query(
       'UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3',
       [rentReturn, delayFee, id] 
