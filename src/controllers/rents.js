@@ -49,8 +49,10 @@ export async function addRent(req, res) {
       const game = await connection.query('SELECT * FROM games WHERE id = $1', [
         gameId,
       ]);
+      console.log(game);
       const { pricePerDay } = game.rows[0];
       originalPrice = pricePerDay * daysRented;
+
   
       // Check if the customer is already registered
       const customer = await connection.query(
@@ -62,16 +64,32 @@ export async function addRent(req, res) {
         return res.status(400).send('customer does not exist');
       }
   
-      // Check if the game is available
-      const gameAvailable = await connection.query(
+      // Check if the game exists
+      const gameIsThere = await connection.query(
         'SELECT * FROM games WHERE id = $1',
         [gameId]
       );
-      const verifyGame = gameAvailable.rows[0] === 0;
+      const verifyGame = gameIsThere.rows[0] === 0;
       if (verifyGame) {
         return res.status(400).send("Game not found!");
       }
   
+      //Check if the game is available
+      const checkGame = gameIsThere.rows[0].stockTotal;
+      const gamesOut = await connection.query(
+        'SELECT * FROM rentals WHERE "gameId" = $1 AND "returnDate" IS NULL', [gameId]
+      );
+
+      const gameOutNumber = gamesOut.rows.length;
+      const available = checkGame > gameOutNumber;
+      if(!available) {
+        return res.status(400).send('Game not available');
+      }
+
+
+
+
+
       await connection.query(
         'INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") VALUES ($1, $2, $3, $4, $5, $6, $7);',
         [
