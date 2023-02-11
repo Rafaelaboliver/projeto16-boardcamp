@@ -1,6 +1,14 @@
 import connection from "../config/database.js";
 
-//list all customers 
+//list all customers
+export async function displayAllCustomers(req, res) {
+    try {
+        const customers = await connection.query('SELECT * FROM customers;')
+        res.status(200).send(customers.rows);
+    } catch (error) {
+        return res.status(500).send('server error: ' + error)
+    };
+}
 
 //list a customer by id 
 
