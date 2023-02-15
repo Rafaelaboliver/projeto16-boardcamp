@@ -4,7 +4,39 @@ import connection from "../config/database.js";
 export async function displayRents(req, res) {
   try {
 
-    const rentals = await connection.query(`WITH rental_game_customer AS (
+    const rentals = await connection.query(`SELECT rentals.*,
+      JSON_BUILD_OBJECT(
+        'id', customers.id,
+        'name', customers.name
+      ) AS customer,
+      JSON_BUILD_OBJECT(
+        'id', games.id,
+        'name', games.name
+      ) AS game
+      FROM rentals
+      JOIN customers 
+      ON customers.id = rentals."customerId"
+      JOIN games
+      ON games.id = rentals."gameId"
+    `
+
+    /*   SELECT rentals.*,
+                    JSON_BUILD_OBJECT(
+                        'id', customers.id,
+                        'name', customers.name
+                    ) AS customer,
+                    JSON_BUILD_OBJECT(
+                        'id', games.id,
+                        'name', games.name
+                    ) AS game
+                FROM rentals
+                JOIN games
+                ON games.id = rentals."gameId"
+                JOIN customers
+                ON customers.id = rentals."customerId";*/ 
+      
+      
+      /*`WITH rental_game_customer AS (
         SELECT rentals.id, rentals."customerId", rentals."gameId", rentals."rentDate", rentals."daysRented", rentals."returnDate", rentals."originalPrice", rentals."delayFee",
                customers.id AS customer_id, customers.name AS customer_name,
                games.id AS game_id, games.name AS game_name
@@ -27,7 +59,7 @@ export async function displayRents(req, res) {
           json_build_object('id', game_id, 'name', game_name) AS game
         FROM rental_game_customer
       ) rental_game_customer;
-      `);
+      `*/);
 
     console.log(rentals.rows);
     res.status(200).send(rentals.rows);
@@ -116,15 +148,16 @@ export async function updateRent(req, res) {
       'SELECT * FROM rentals WHERE id = $1',
       [id]
     );
-    const rentExists = rent.rowCount !== 0
+    const rentExists = rent.rowCount !== 0;
     if (!rentExists) {
       return res.status(404).send("Rent does not exist!");
     }
     let check = rent.rows[0];
 
     const returned = check.returnDate;
+    console.log('returned', returned);
     if (returned !== null) {
-      return res.status(400).send("Rental already returned!");
+      return res.status(400).send("Rental is already returned!");
     }
 
     const rentDate = new Date(check.rentDate);
@@ -140,7 +173,6 @@ export async function updateRent(req, res) {
       ]);
       
       const { pricePerDay } = game.rows[0];
-
 
       delayFee = lagDays * pricePerDay;
     }
